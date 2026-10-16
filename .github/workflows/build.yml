@@ -87,6 +87,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Tools (makerom built for this container, bannertool)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           apt-get update
           apt-get install -y --no-install-recommends ninja-build python3 curl ca-certificates git build-essential zip
