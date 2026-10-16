@@ -26,5 +26,6 @@ if [ ! -x "$D/bin/bannertool" ]; then
   install -m755 "$D/dl/bannertool/linux-x86_64/bannertool" "$D/bin/bannertool"
 fi
 rm -rf "$D/dl"
-"$D/bin/makerom" 2>&1 | head -1
-"$D/bin/bannertool" 2>&1 | head -1
+# Both print their banner and exit non-zero when called without arguments.
+"$D/bin/makerom" 2>&1 | head -1 || true
+"$D/bin/bannertool" 2>&1 | head -1 || true
