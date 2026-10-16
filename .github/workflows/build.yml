@@ -83,17 +83,17 @@ jobs:
   n3ds:
     runs-on: ubuntu-24.04
     continue-on-error: true
-    env:
-      DEVKITPRO: /opt/devkitpro
-      DEVKITARM: /opt/devkitpro/devkitARM
+    container: devkitpro/devkitarm:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Tools (devkitPro pacman for Debian, makerom, bannertool)
+      - name: Tools (makerom built for this container, bannertool)
         run: |
-          sudo apt-get update && sudo apt-get install -y ninja-build
-          curl -fsSLO https://apt.devkitpro.org/install-devkitpro-pacman
-          chmod +x install-devkitpro-pacman && sudo ./install-devkitpro-pacman
-          sudo dkp-pacman -S --noconfirm --needed 3ds-dev
+          apt-get update
+          apt-get install -y --no-install-recommends ninja-build python3 curl ca-certificates git build-essential zip
+          git clone --depth 1 https://github.com/3DSGuy/Project_CTR /tmp/ctr
+          make -C /tmp/ctr/makerom deps && make -C /tmp/ctr/makerom program
+          mkdir -p $HOME/toolchains/ctr-tools/bin
+          install -m755 /tmp/ctr/makerom/bin/makerom $HOME/toolchains/ctr-tools/bin/makerom
           TOOLCHAINS=$HOME/toolchains bash scripts/toolchains/setup_3ds.sh
       - name: Build
         run: |
