@@ -3970,6 +3970,14 @@ error_reading:;
       case SDL_MOUSEBUTTONUP:
       case SDL_FINGERDOWN:
       case SDL_FINGERUP:
+#if defined(__3DS__) || defined(__vita__)
+        /* No stick clicks (and no ZL on the original 3DS) for the pad
+         * chords: a tap on the touch screen opens the settings menu. */
+        if (event.type == SDL_FINGERDOWN && !g_live_px) {
+          g_settings_menu_hotkey = 1;
+          break;
+        }
+#endif
         if (g_live_px && g_game->companion_pointer) {
           int px = 0, py = 0, ww = 0, wh = 0;
           const int finger = event.type == SDL_FINGERDOWN || event.type == SDL_FINGERUP;

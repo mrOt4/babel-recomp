@@ -82,6 +82,24 @@ escalado HD, New Game+, RetroAchievements y mucho más.
 - **Controles táctiles** en Android: un mando en pantalla junto a la imagen,
   que se oculta al conectar un mando físico.
 
+### Modos de pantalla
+
+- **Panorámico 16:9.** La imagen se amplía por los lados con el mapa real (lo
+  que la SNES nunca mostraba), sin estirarla; más allá del borde del mapa las
+  columnas extra quedan en negro. En los ajustes de pantalla del lanzador elige
+  **16:9 (Widescreen)**, o pon `Widescreen = 1` en `[Graphics]` de `config.ini`
+  (en 3DS y Vita, que no tienen lanzador). Desactivado, la imagen 4:3 es
+  idéntica a la original.
+- **Pantalla compañera.** I en el teclado, ZL + L3 en un mando: el juego se
+  pausa en una segunda pantalla dibujada con el arte del propio juego: tu
+  inventario sobre el pedestal de piedra (toca o pulsa A para equipar), la
+  página de estado, los estados guardados con miniatura y los ajustes.
+  Funciona también con el tacto.
+- **Doble pantalla.** *Dual* pone el juego y la pantalla compañera uno al lado
+  del otro, ambos en marcha; **Flip Grip** y **Flip Grip R** los apilan y giran
+  la imagen un cuarto de vuelta para jugar con la consola en vertical (Switch
+  con Flip Grip, móviles, tablets). Menú de ajustes → *Pantalla compañera*.
+
 Todos los mods y opciones están descritos en [MODS.md](MODS.md).
 
 ## Instalación y uso
@@ -98,6 +116,38 @@ languages/                  tus ROMs europeas (opcional)
 msu1/                       los .pcm de tu pack MSU-1 (opcional)
 shaders/                    shaders GLSL de RetroArch (opcional)
 ```
+
+### Dónde va cada cosa
+
+| Plataforma | Carpeta del juego (ROM, `languages/`, `msu1/`, `mods/`, `shaders/`, `saves/`, `logs/`, `config.ini`) |
+|---|---|
+| Windows | la carpeta donde lo descomprimiste, junto a `babel-recomp.exe` |
+| Linux | la carpeta donde lo descomprimiste, junto a `babel-recomp` |
+| macOS | la carpeta donde lo descomprimiste, junto a `babel-recomp` |
+| Switch | `sdmc:/switch/babel-recomp/` (los shaders también se leen de `sdmc:/retroarch/shaders/shaders_glsl/`) |
+| Android | `Android/data/com.mr0ta.babelrecomp/files/` en el almacenamiento interno |
+| 3DS | `sdmc:/3ds/babel-recomp/` (firmware DSP: `sdmc:/3ds/dspfirm.cdc`) |
+| Vita | `ux0:data/babel-recomp/` (la aplicación se instala como `ux0:app/BABL00001`) |
+
+Dentro de esa carpeta:
+
+| Ruta | Contenido |
+|---|---|
+| `rom.sfc` | tu ROM USA |
+| `languages/` | tus ROMs europeas, con cualquier nombre |
+| `msu1/` | los `.pcm` de un pack MSU-1 |
+| `mods/` | mods descomprimidos (carpeta con `manifest.toml`) y el catálogo incluido |
+| `shaders/` | shaders GLSL de RetroArch (PC, Switch, Android) |
+| `saves/save.srm` | la partida de batería del juego (compatible con el original) |
+| `saves/save0.sav` … | estados guardados, con miniaturas `.thumb` |
+| `logs/` | el registro de depuración y los informes de cuelgues |
+| `config.ini`, `keybinds.ini` | ajustes y controles |
+| `env.txt` | solo consolas, opcional: opciones de diagnóstico, una `CLAVE=valor` por línea |
+
+En PC, si la carpeta es de solo lectura, los registros van a la carpeta de
+datos del usuario (`%APPDATA%\babel-recomp`, `~/.local/share/babel-recomp`,
+`~/Library/Application Support/babel-recomp`); la segunda línea del registro
+indica la ruta.
 
 ### Windows
 
@@ -185,19 +235,51 @@ automáticamente los ajustes más rápidos. Según lo medido en emulador, una Ne
 3DS movería el juego a unos tres cuartos de su velocidad completa; se agradecen
 datos de consolas reales (activa el contador de FPS en el menú de ajustes).
 
-## Controles (teclado, por defecto)
+## Controles
 
-| SNES | Tecla | | Acción | Tecla |
+La disposición de SNES, por **posición** en cualquier mando: en consolas de
+Nintendo coinciden las letras (A derecha, B abajo, X arriba, Y izquierda); en
+otros mandos, el botón en esa posición hace esa función. Todo se puede
+reasignar en el lanzador.
+
+| SNES | Teclado | Nintendo (Switch, 3DS) | Xbox | PlayStation / Vita |
 |---|---|---|---|---|
-| Cruceta | Flechas | | Menú de ajustes | Esc |
-| A / B | X / Z | | Pantalla complementaria | I |
-| X / Y | S / A | | Guardar / cargar estado 1-10 | Mayús+F1-F10 / F1-F10 |
-| L / R | C / V | | Menú de estados | F11 |
-| Start / Select | Intro / Mayús dcha. | | Rebobinar / avance rápido | F12 / Tab |
-| | | | Pantalla completa | Alt+Intro |
-| | | | Siguiente idioma | Ctrl+L |
+| Cruceta | Flechas | Cruceta / stick izquierdo | Cruceta / stick izquierdo | Cruceta / stick izquierdo |
+| A | X | A | B | Círculo |
+| B | Z | B | A | Equis |
+| X | S | X | Y | Triángulo |
+| Y | A | Y | X | Cuadrado |
+| L / R | C / V | L / R | LB / RB | L1 / R1 (Vita: L / R) |
+| Start / Select | Intro / Mayús dcha. | + / − (3DS: Start / Select) | Menu / View | Options / Share (Vita: Start / Select) |
 
-Todo se puede reasignar en el lanzador (teclado y mandos).
+**Atajos.** En un mando, mantén **ZL** (LT, L2) como botón de función; el juego
+nunca lo usa:
+
+| Acción | Teclado | Mando |
+|---|---|---|
+| Menú de ajustes | Esc | ZL + R3 |
+| Pantalla compañera | I | ZL + L3 |
+| Menú de estados guardados | F11 | ZL + Start |
+| Guardar / cargar rápido (ranura 1) | Mayús+F1 / F1 (ranuras 1-10: F1-F10) | ZL + R / ZL + L |
+| Rebobinar | F12 | ZL + Select |
+| Avance rápido (mantener) | Tab | ZL + ZR |
+| Indicador de rendimiento | — | ZL + X |
+| Volumen | — | ZL + Arriba / Abajo |
+| Pantalla completa | Alt+Intro | — |
+| Siguiente idioma | Ctrl+L | — |
+
+**Por plataforma.**
+
+- **Switch:** Joy-Con (acoplados o por parejas) o mando Pro. La pantalla táctil
+  funciona en la pantalla compañera y en los modos Dual / Flip Grip.
+- **Android:** el mando en pantalla (cruceta, A/B/X/Y, L/R, Select/Start y un
+  botón ☰ para los ajustes) mientras no haya un mando conectado; un mando
+  Bluetooth o USB lo oculta y usa la tabla de arriba.
+- **3DS:** los botones de la consola (Circle Pad = cruceta). **Toca la pantalla
+  táctil** para abrir el menú de ajustes; los estados guardados están dentro.
+- **Vita:** los botones de la consola como en la columna de PlayStation. **Toca
+  la pantalla** para abrir el menú de ajustes; los estados guardados están
+  dentro.
 
 ## Compilar desde el código
 

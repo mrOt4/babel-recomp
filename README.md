@@ -82,6 +82,23 @@ scaling, New Game+, RetroAchievements and more.
 - **Touch controls** on Android: an on-screen pad beside the picture, hidden
   while a controller is connected.
 
+### Display modes
+
+- **Widescreen 16:9.** The picture is extended to the sides with the real map
+  (what the SNES never showed), not stretched; past the edge of a map the
+  extra columns stay black. In the launcher's display settings choose
+  **16:9 (Widescreen)**, or set `Widescreen = 1` under `[Graphics]` in
+  `config.ini` (on the 3DS and the Vita, which have no launcher). Off, the 4:3 picture is identical to the
+  original.
+- **Companion screen.** I on the keyboard, ZL + L3 on a pad: the game pauses on
+  a second screen drawn in the game's own art — your inventory on the stone
+  pedestal (tap or press A to equip), the status page, the save states with
+  thumbnails, and the settings. Works by touch.
+- **Dual screen.** *Dual* puts the game and the companion side by side, both
+  live; **Flip Grip** and **Flip Grip R** stack them and turn the picture a
+  quarter turn for a console held upright (Switch with a Flip Grip, phones,
+  tablets). Settings menu → *Companion screen*.
+
 Every mod and option is described in [MODS.md](MODS.md).
 
 ## Install and play
@@ -98,6 +115,38 @@ languages/                  your European ROMs (optional)
 msu1/                       your MSU-1 pack's .pcm files (optional)
 shaders/                    RetroArch GLSL shaders (optional)
 ```
+
+### Where everything goes
+
+| Platform | Game folder (ROM, `languages/`, `msu1/`, `mods/`, `shaders/`, `saves/`, `logs/`, `config.ini`) |
+|---|---|
+| Windows | the folder you unzipped, beside `babel-recomp.exe` |
+| Linux | the folder you unzipped, beside `babel-recomp` |
+| macOS | the folder you unzipped, beside `babel-recomp` |
+| Switch | `sdmc:/switch/babel-recomp/` (shaders also from `sdmc:/retroarch/shaders/shaders_glsl/`) |
+| Android | `Android/data/com.mr0ta.babelrecomp/files/` on the internal storage |
+| 3DS | `sdmc:/3ds/babel-recomp/` (DSP firmware: `sdmc:/3ds/dspfirm.cdc`) |
+| Vita | `ux0:data/babel-recomp/` (the app itself installs as `ux0:app/BABL00001`) |
+
+Inside it:
+
+| Path | Contents |
+|---|---|
+| `rom.sfc` | your USA ROM |
+| `languages/` | your European ROMs, any file name |
+| `msu1/` | an MSU-1 pack's `.pcm` files |
+| `mods/` | unpacked mods (a folder with `manifest.toml`), plus the built-in catalog |
+| `shaders/` | RetroArch GLSL shaders (desktop, Switch, Android) |
+| `saves/save.srm` | the game's battery save (compatible with the original) |
+| `saves/save0.sav` … | save states, with `.thumb` previews |
+| `logs/` | the debug log and crash reports |
+| `config.ini`, `keybinds.ini` | settings and controls |
+| `env.txt` | consoles only, optional: diagnostic switches, one `KEY=VALUE` per line |
+
+On a PC, if the folder is read-only the logs go to the per-user data folder
+instead (`%APPDATA%\babel-recomp`, `~/.local/share/babel-recomp`,
+`~/Library/Application Support/babel-recomp`); the log's second line gives the
+path.
 
 ### Windows
 
@@ -183,19 +232,49 @@ emulator, a New 3DS should run the game at about three quarters of full
 speed; reports from real hardware are welcome (enable the FPS counter in the
 settings menu).
 
-## Controls (keyboard defaults)
+## Controls
 
-| SNES | Key | | Action | Key |
+The SNES layout, by **position** on every pad: on Nintendo consoles the
+labels match (A right, B bottom, X top, Y left); on other pads the button in
+that position plays that role. Everything can be remapped in the launcher.
+
+| SNES | Keyboard | Nintendo (Switch, 3DS) | Xbox | PlayStation / Vita |
 |---|---|---|---|---|
-| D-pad | Arrows | | Settings menu | Esc |
-| A / B | X / Z | | Companion screen | I |
-| X / Y | S / A | | Save / load state 1-10 | Shift+F1-F10 / F1-F10 |
-| L / R | C / V | | Save-state menu | F11 |
-| Start / Select | Enter / Right Shift | | Rewind / fast-forward | F12 / Tab |
-| | | | Fullscreen | Alt+Enter |
-| | | | Next language | Ctrl+L |
+| D-pad | Arrows | D-pad / left stick | D-pad / left stick | D-pad / left stick |
+| A | X | A | B | Circle |
+| B | Z | B | A | Cross |
+| X | S | X | Y | Triangle |
+| Y | A | Y | X | Square |
+| L / R | C / V | L / R | LB / RB | L1 / R1 (Vita: L / R) |
+| Start / Select | Enter / Right Shift | + / − (3DS: Start / Select) | Menu / View | Options / Share (Vita: Start / Select) |
 
-Everything can be remapped in the launcher (keyboard and gamepads).
+**Shortcuts.** On a pad, hold **ZL** (LT, L2) as a function button — the game
+never uses it:
+
+| Action | Keyboard | Pad |
+|---|---|---|
+| Settings menu | Esc | ZL + R3 |
+| Companion screen | I | ZL + L3 |
+| Save-state menu | F11 | ZL + Start |
+| Quick save / load (slot 1) | Shift+F1 / F1 (slots 1-10: F1-F10) | ZL + R / ZL + L |
+| Rewind | F12 | ZL + Select |
+| Fast forward (hold) | Tab | ZL + ZR |
+| Performance overlay | — | ZL + X |
+| Volume | — | ZL + Up / Down |
+| Fullscreen | Alt+Enter | — |
+| Next language | Ctrl+L | — |
+
+**Per platform.**
+
+- **Switch:** Joy-Con (attached or in pairs) or a Pro Controller. The touch
+  screen works on the companion screen and in Dual / Flip Grip.
+- **Android:** the on-screen pad (d-pad, A/B/X/Y, L/R, Select/Start and a ☰
+  button for the settings) while no controller is connected; a Bluetooth or
+  USB controller hides it and uses the table above.
+- **3DS:** the console's buttons (Circle Pad = d-pad). **Tap the touch screen**
+  to open the settings menu; save states are inside it.
+- **Vita:** the console's buttons as in the PlayStation column. **Tap the
+  screen** to open the settings menu; save states are inside it.
 
 ## Build from source
 
