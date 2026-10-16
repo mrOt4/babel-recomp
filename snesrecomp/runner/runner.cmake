@@ -1183,7 +1183,7 @@ function(snesrecomp_target_retroachievements target)
             target_link_libraries(${target} PRIVATE curl z nx)   # libnx TLS backend: no mbedtls
             set(_backend "switch-curl")
         endif()
-    elseif(NOT ANDROID)
+    elseif(NOT ANDROID AND NOT NINTENDO_3DS AND NOT VITA)
         find_package(CURL QUIET)
         if(CURL_FOUND)
             target_compile_definitions(${target} PRIVATE SNESRECOMP_RA_CURL=1)

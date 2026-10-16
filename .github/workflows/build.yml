@@ -1,8 +1,8 @@
 # Builds the interpreter-only game for Linux, Windows, macOS and Android, and
 # on a v* tag publishes the zips (and the APK) as a GitHub Release. Nothing
 # here touches a ROM: the binaries carry no ROM-derived code and every player
-# supplies their own copy. The 3DS and Vita jobs run in the toolchains'
-# official containers and are best effort (continue-on-error); the Switch
+# supplies their own copy. The 3DS and Vita jobs are best effort
+# (continue-on-error); the Switch
 # build needs Mesa for Switch and is made locally (scripts/toolchains).
 name: Build
 
@@ -62,9 +62,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '21' }
-      - uses: android-actions/setup-android@v3
-      - name: SDK packages
-        run: sdkmanager "ndk;27.3.13750724" "cmake;3.31.6" "platforms;android-35"
+      - name: SDK packages (the runner's preinstalled SDK)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;27.3.13750724" "cmake;3.31.6" "platforms;android-35"
       - name: Build APK
         working-directory: android
         run: ./gradlew --no-daemon assembleRelease
@@ -81,12 +83,17 @@ jobs:
   n3ds:
     runs-on: ubuntu-24.04
     continue-on-error: true
-    container: devkitpro/devkitarm:latest
+    env:
+      DEVKITPRO: /opt/devkitpro
+      DEVKITARM: /opt/devkitpro/devkitARM
     steps:
       - uses: actions/checkout@v4
-      - name: Tools
+      - name: Tools (devkitPro pacman for Debian, makerom, bannertool)
         run: |
-          apt-get update && apt-get install -y --no-install-recommends ninja-build python3 curl ca-certificates zip
+          sudo apt-get update && sudo apt-get install -y ninja-build
+          curl -fsSLO https://apt.devkitpro.org/install-devkitpro-pacman
+          chmod +x install-devkitpro-pacman && sudo ./install-devkitpro-pacman
+          sudo dkp-pacman -S --noconfirm --needed 3ds-dev
           TOOLCHAINS=$HOME/toolchains bash scripts/toolchains/setup_3ds.sh
       - name: Build
         run: |
@@ -105,7 +112,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build
         run: |
-          apk add --no-cache cmake ninja python3 bash || true
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE=$VITASDK/share/vita.toolchain.cmake
           cmake --build build
