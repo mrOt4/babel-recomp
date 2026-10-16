@@ -1,0 +1,86 @@
+format_version = 1
+id = "iog.cheats"
+version = "1.0.0"
+name = "Cheats"
+author = "mr0ta"
+description = "Classic cheats. They change the game's memory while you play; turn them off to play normally."
+license = "PolyForm-Noncommercial-1.0.0"
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "illusionofgaiausa-usa"
+rom_sha256 = "32adc048fd89228a4310c03df243e83de7d436cdb2460b4cc83ade20d359b2bd"
+
+[[feature]]
+id = "infinite_hp"
+name = "Infinite HP"
+description = "Your HP refills to the maximum every frame."
+group = "Cheats"
+default_enabled = false
+
+[[plugin]]
+feature = "infinite_hp"
+id = "iog.cheat.hp"
+
+[[feature]]
+id = "dp"
+name = "Dark Power (DP)"
+description = "Never have less than this much DP."
+group = "Cheats"
+default_enabled = false
+
+[[option]]
+feature = "dp"
+id = "amount"
+label = "Minimum DP"
+type = "integer"
+default = 99
+min = 0
+max = 999
+step = 1
+
+[[plugin]]
+feature = "dp"
+id = "iog.cheat.dp"
+
+[[feature]]
+id = "stats"
+name = "Stats"
+description = "Never have less than these stats (0 leaves one unchanged)."
+group = "Cheats"
+default_enabled = false
+
+[[option]]
+feature = "stats"
+id = "strength"
+label = "Minimum strength"
+type = "integer"
+default = 0
+min = 0
+max = 99
+step = 1
+
+[[option]]
+feature = "stats"
+id = "defense"
+label = "Minimum defense"
+type = "integer"
+default = 0
+min = 0
+max = 99
+step = 1
+
+[[option]]
+feature = "stats"
+id = "max_hp"
+label = "Minimum max HP"
+type = "integer"
+default = 0
+min = 0
+max = 40
+step = 1
+
+[[plugin]]
+feature = "stats"
+id = "iog.cheat.stats"

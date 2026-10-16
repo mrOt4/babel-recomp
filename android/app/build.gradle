@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The native side is the game's own CMake project (two levels up), built as
+// libmain.so with SDL3 linked in statically.
+android {
+    namespace = "com.mr0ta.babelrecomp"
+    compileSdkVersion 35
+    ndkVersion = "27.3.13750724"
+    defaultConfig {
+        applicationId "com.mr0ta.babelrecomp"
+        minSdkVersion 24
+        targetSdkVersion 35
+        versionCode 1
+        versionName "1.0"
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_PLATFORM=android-24", "-DANDROID_STL=c++_static",
+                          "-DCMAKE_BUILD_TYPE=Release"
+                abiFilters 'arm64-v8a'
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug   // sign your own for distribution
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path '../../CMakeLists.txt'
+            version '3.31.6'
+        }
+    }
+    lint {
+        abortOnError = false
+    }
+    sourceSets.main.assets.srcDirs = ["$buildDir/bundled"]
+}
+
+// The data files the desktop build stages beside the executable, bundled
+// into the APK (BabelActivity copies them to the app's files folder).
+def repo = file('../..')
+tasks.register('bundleGameFiles', Copy) {
+    into "$buildDir/bundled"
+    from("$repo/recomp-ui/assets/common") { into 'assets' }
+    from("$repo/recomp-ui/assets/consoles/snes") { into 'assets'; exclude '*.json', '*.md' }
+    from("$repo/i18n") { into 'i18n' }
+    from("$repo/mods/preloaded/packages") { into 'mods/preloaded/packages' }
+}
+preBuild.dependsOn bundleGameFiles

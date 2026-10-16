@@ -1,0 +1,18 @@
+# cmake -S . -B build-win -G Ninja -DCMAKE_TOOLCHAIN_FILE=scripts/toolchains/windows-llvm-mingw.cmake
+set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
+if(DEFINED ENV{TOOLCHAINS})
+  set(_tc "$ENV{TOOLCHAINS}/llvm-mingw")
+else()
+  set(_tc "$ENV{HOME}/toolchains/llvm-mingw")
+endif()
+set(CMAKE_C_COMPILER   "${_tc}/bin/x86_64-w64-mingw32-clang")
+set(CMAKE_CXX_COMPILER "${_tc}/bin/x86_64-w64-mingw32-clang++")
+set(CMAKE_RC_COMPILER  "${_tc}/bin/x86_64-w64-mingw32-windres")
+set(CMAKE_FIND_ROOT_PATH "${_tc}/x86_64-w64-mingw32")
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+# Same as the upstream CI pack: no runtime DLLs to ship.
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-static")

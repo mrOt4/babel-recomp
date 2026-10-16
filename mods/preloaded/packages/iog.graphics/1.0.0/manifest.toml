@@ -1,0 +1,40 @@
+format_version = 1
+id = "iog.graphics"
+version = "1.0.0"
+name = "Graphics effects"
+author = "mr0ta"
+description = "How the picture is drawn on screen (never changes how the game plays)."
+license = "PolyForm-Noncommercial-1.0.0"
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "illusionofgaiausa-usa"
+rom_sha256 = "32adc048fd89228a4310c03df243e83de7d436cdb2460b4cc83ade20d359b2bd"
+
+[[feature]]
+id = "hd"
+name = "HD scaling"
+description = "Sharp picture at any resolution (720p, 1080p, 4K): every pixel of the game stays a crisp square block instead of the blur of plain filtering, with no uneven pixels at non-integer sizes. 'Smooth' redraws the diagonal and curved edges of the art at the screen's resolution (xBR) and needs Renderer = OpenGL; HD texture packs are shown sharp. Off: the LinearFiltering setting, as on the original."
+group = "Graphics"
+default_enabled = true
+presentation_only = true
+
+[[option]]
+feature = "hd"
+id = "filter"
+label = "Scaling"
+type = "choice"
+default = "sharp"
+
+[[option.choice]]
+value = "sharp"
+label = "Sharp pixels"
+
+[[option.choice]]
+value = "smooth"
+label = "Smooth edges (xBR, OpenGL)"
+
+[[plugin]]
+feature = "hd"
+id = "iog.hd"

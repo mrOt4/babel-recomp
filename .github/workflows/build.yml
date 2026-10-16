@@ -1,0 +1,125 @@
+# Builds the interpreter-only game for Linux, Windows, macOS and Android, and
+# on a v* tag publishes the zips (and the APK) as a GitHub Release. Nothing
+# here touches a ROM: the binaries carry no ROM-derived code and every player
+# supplies their own copy. The 3DS and Vita jobs run in the toolchains'
+# official containers and are best effort (continue-on-error); the Switch
+# build needs Mesa for Switch and is made locally (scripts/toolchains).
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, tag: linux-x86_64 }
+          - { os: ubuntu-24.04, tag: windows-x86_64, cross: windows }
+          - { os: macos-14,     tag: macos-arm64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libx11-dev libxext-dev libxrandr-dev \
+            libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libwayland-dev \
+            libxkbcommon-dev wayland-protocols libegl1-mesa-dev libgl1-mesa-dev \
+            libasound2-dev libpulse-dev libudev-dev libdbus-1-dev
+      - name: Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+      - name: Toolchain (Windows cross)
+        if: matrix.cross == 'windows'
+        run: TOOLCHAINS=$HOME/toolchains bash scripts/toolchains/setup_windows.sh
+      - name: Configure
+        run: |
+          EXTRA=""
+          if [ "${{ matrix.cross }}" = windows ]; then
+            EXTRA="-DCMAKE_TOOLCHAIN_FILE=scripts/toolchains/windows-llvm-mingw.cmake"
+          fi
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $EXTRA
+      - name: Build
+        run: cmake --build build
+      - name: Package
+        run: bash scripts/package_release.sh build ${{ matrix.tag }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tag }}
+          path: dist/*.zip
+
+  android:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: android-actions/setup-android@v3
+      - name: SDK packages
+        run: sdkmanager "ndk;27.3.13750724" "cmake;3.31.6" "platforms;android-35"
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew --no-daemon assembleRelease
+      - name: Rename
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk \
+             dist/babel-recomp-$(tr -d '[:space:]' < VERSION)-android-arm64.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-arm64
+          path: dist/*.apk
+
+  n3ds:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    container: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools
+        run: |
+          apt-get update && apt-get install -y --no-install-recommends ninja-build python3 curl ca-certificates zip
+          TOOLCHAINS=$HOME/toolchains bash scripts/toolchains/setup_3ds.sh
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=$DEVKITPRO/cmake/3DS.cmake
+          cmake --build build
+          bash scripts/package_release.sh build 3ds
+      - uses: actions/upload-artifact@v4
+        with: { name: 3ds, path: dist/*.zip }
+
+  vita:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    container: vitasdk/vitasdk:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          apk add --no-cache cmake ninja python3 bash || true
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=$VITASDK/share/vita.toolchain.cmake
+          cmake --build build
+          bash scripts/package_release.sh build vita
+      - uses: actions/upload-artifact@v4
+        with: { name: vita, path: dist/*.vpk }
+
+  release:
+    if: always() && startsWith(github.ref, 'refs/tags/v')
+    needs: [desktop, android, n3ds, vita]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dist, merge-multiple: true }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

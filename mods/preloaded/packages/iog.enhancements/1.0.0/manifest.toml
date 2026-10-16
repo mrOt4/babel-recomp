@@ -1,0 +1,160 @@
+format_version = 1
+id = "iog.enhancements"
+version = "1.0.0"
+name = "Gameplay enhancements"
+author = "mr0ta"
+description = "Quality-of-life additions. Based on the GaiaLabs enhancement patches (documentation only; reimplemented here)."
+license = "PolyForm-Noncommercial-1.0.0"
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "illusionofgaiausa-usa"
+rom_sha256 = "32adc048fd89228a4310c03df243e83de7d436cdb2460b4cc83ade20d359b2bd"
+
+[[feature]]
+id = "run"
+name = "Run button"
+description = "Hold the run button with a direction to sprint (Will's dash), wherever you can move."
+group = "Gameplay"
+default_enabled = false
+
+[[option]]
+feature = "run"
+id = "button"
+label = "Run button"
+type = "choice"
+default = "Y"
+
+[[option.choice]]
+value = "Y"
+label = "Y"
+
+[[option.choice]]
+value = "X"
+label = "X"
+
+[[option.choice]]
+value = "L"
+label = "L"
+
+[[option.choice]]
+value = "R"
+label = "R"
+
+[[plugin]]
+feature = "run"
+id = "iog.run"
+
+[[feature]]
+id = "hotswap"
+name = "Item hotswapping"
+description = "Hold the modifier and press L or R to equip the previous or next item without opening the menu."
+group = "Gameplay"
+default_enabled = false
+
+[[option]]
+feature = "hotswap"
+id = "modifier"
+label = "Hold"
+type = "choice"
+default = "X"
+
+[[option.choice]]
+value = "X"
+label = "X"
+
+[[option.choice]]
+value = "Y"
+label = "Y"
+
+[[option.choice]]
+value = "Select"
+label = "Select"
+
+[[plugin]]
+feature = "hotswap"
+id = "iog.hotswap"
+
+[[feature]]
+id = "msu1"
+name = "MSU-1 soundtrack"
+description = "Play the music from an MSU-1 pack for Illusion of Gaia (CD-quality 44.1 kHz). Sound effects stay the game's own. Songs the pack lacks play as usual."
+group = "Audio"
+default_enabled = false
+
+[[resource]]
+feature = "msu1"
+id = "pack"
+label = "MSU-1 pack folder"
+description = "The folder with the pack's <name>-<N>.pcm tracks. Leave it empty to use the msu1 folder beside the game."
+format = "directory"
+identity = "snes.msu1.pack"
+required = false
+
+[[plugin]]
+feature = "msu1"
+id = "iog.msu1"
+
+[[feature]]
+id = "stacking"
+name = "Item stacking"
+description = "Red Jewels, Herbs and Crystals share one inventory slot each, with a counter on the inventory screen."
+group = "Inventory"
+default_enabled = false
+
+[[plugin]]
+feature = "stacking"
+id = "iog.stacking"
+
+[[feature]]
+id = "equipped"
+name = "Equipped indicator"
+description = "Frame the equipped item on the inventory screen."
+group = "Inventory"
+default_enabled = false
+
+[[plugin]]
+feature = "equipped"
+id = "iog.equipped"
+
+[[feature]]
+id = "ngplus"
+name = "New Game Plus"
+description = "Finish the game with this on and that save file becomes a New Game Plus: continuing it starts the journey again keeping Will's stats and abilities (story, dungeons and items reset)."
+group = "Gameplay"
+default_enabled = false
+
+[[plugin]]
+feature = "ngplus"
+id = "iog.ngplus"
+
+[[feature]]
+id = "hold_advance"
+name = "Hold to advance dialogue"
+description = "Keep the confirm button (A, B or Y) held to go through dialogue pages one after another instead of pressing for each. Questions (yes/no and other choices) always wait for a real press."
+group = "Gameplay"
+default_enabled = false
+
+[[option]]
+feature = "hold_advance"
+id = "speed"
+label = "Speed"
+type = "choice"
+default = "normal"
+
+[[option.choice]]
+value = "slow"
+label = "Slow"
+
+[[option.choice]]
+value = "normal"
+label = "Normal"
+
+[[option.choice]]
+value = "fast"
+label = "Fast"
+
+[[plugin]]
+feature = "hold_advance"
+id = "iog.hold_advance"

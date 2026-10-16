@@ -1,0 +1,33 @@
+format_version = 1
+id = "iog.apocalypse"
+version = "1.0.0"
+name = "Apocalypse Gaia"
+author = "mr0ta (patch support); Apocalypse Gaia by its author (IOGR community)"
+description = "Apocalypse Gaia: restores the game's unfinished final boss, fought after Dark Gaia. Download the patch (IOG_ApocalypseGaia_12.ips, from the Illusion of Gaia Randomizer community, iogr.app) and choose it below. Applied in memory; your ROM file is never changed. Save files are compatible."
+license = "PolyForm-Noncommercial-1.0.0"
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "illusionofgaiausa-usa"
+rom_sha256 = "32adc048fd89228a4310c03df243e83de7d436cdb2460b4cc83ade20d359b2bd"
+
+[[feature]]
+id = "apocalypse_gaia"
+name = "Apocalypse Gaia boss"
+description = "Adds the restored Apocalypse Gaia fight after Dark Gaia. The game runs fully interpreted while it is on."
+group = "ROM patches"
+default_enabled = false
+
+[[resource]]
+feature = "apocalypse_gaia"
+id = "patch"
+label = "Apocalypse Gaia patch (.ips)"
+description = "The IOG_ApocalypseGaia .ips for Illusion of Gaia (US), without header. Not distributed with this project."
+file_patterns = "*.ips"
+file_description = "IPS patch"
+required = false
+
+[[plugin]]
+feature = "apocalypse_gaia"
+id = "iog.apocalypse"

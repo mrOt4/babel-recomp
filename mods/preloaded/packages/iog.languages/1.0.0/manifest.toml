@@ -1,0 +1,70 @@
+format_version = 1
+id = "iog.languages"
+version = "1.0.0"
+name = "Languages"
+author = "mr0ta"
+description = "Play in the language of an official European release you own. Choose your Illusion of Time ROM (Spain, France or Germany) below, or put it in languages/ beside the executable. Nothing is included: the text and font come from your ROM. Ctrl+L switches language in game."
+license = "PolyForm-Noncommercial-1.0.0"
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "illusionofgaiausa-usa"
+rom_sha256 = "32adc048fd89228a4310c03df243e83de7d436cdb2460b4cc83ade20d359b2bd"
+
+[[feature]]
+id = "language"
+name = "Game language"
+description = "Show the game's text in the selected language. Untranslated lines fall back to English."
+group = "Language"
+default_enabled = false
+
+[[option]]
+feature = "language"
+id = "code"
+label = "Language"
+type = "choice"
+default = "es"
+
+[[option.choice]]
+value = "es"
+label = "Español"
+
+[[option.choice]]
+value = "fr"
+label = "Français"
+
+[[option.choice]]
+value = "de"
+label = "Deutsch"
+
+[[plugin]]
+feature = "language"
+id = "iog.i18n"
+
+[[external_rom]]
+feature = "language"
+id = "rom_es"
+label = "Illusion of Time (Spain) ROM"
+description = "Your copy of the official Spanish release, for Español."
+file_patterns = "*.sfc,*.smc"
+file_description = "SNES ROM"
+required = false
+
+[[external_rom]]
+feature = "language"
+id = "rom_fr"
+label = "Illusion of Time (France) ROM"
+description = "Your copy of the official French release, for Français."
+file_patterns = "*.sfc,*.smc"
+file_description = "SNES ROM"
+required = false
+
+[[external_rom]]
+feature = "language"
+id = "rom_de"
+label = "Illusion of Time (Germany) ROM"
+description = "Your copy of the official German release, for Deutsch."
+file_patterns = "*.sfc,*.smc"
+file_description = "SNES ROM"
+required = false

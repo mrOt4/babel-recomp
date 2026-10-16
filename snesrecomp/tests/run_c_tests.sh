@@ -1,0 +1,418 @@
+#!/usr/bin/env bash
+# Build and run the ROM-free C regression harnesses on a POSIX host.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+OUT="${OUT:-$ROOT/build/c-tests}"
+CC="${CC:-gcc}"
+mkdir -p "$OUT"
+
+LAUNCHER_LIBS=""
+GC_SECTIONS_LINKER="-Wl,--gc-sections"
+FIBER_PLATFORM_FLAGS=""
+case "$(uname -s)" in
+    Darwin) GC_SECTIONS_LINKER="-Wl,-dead_strip"; FIBER_PLATFORM_FLAGS="-Wno-error=deprecated-declarations" ;;
+    MINGW*|MSYS*) LAUNCHER_LIBS="-lcomdlg32" ;;
+esac
+
+echo "=== launcher ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -D_POSIX_C_SOURCE=200809L -I "$ROOT/runner/src" \
+    "$ROOT/tests/launcher/launcher_test.c" \
+    "$ROOT/runner/src/launcher.c" \
+    "$ROOT/runner/src/launcher_cache.c" \
+    "$ROOT/runner/src/launcher_picker.c" \
+    "$ROOT/runner/src/rom_image_verify.c" \
+    "$ROOT/runner/src/host_paths.c" \
+    "$ROOT/runner/src/crc32.c" \
+    "$ROOT/runner/src/sha256.c" \
+    $LAUNCHER_LIBS \
+    -o "$OUT/launcher_test"
+"$OUT/launcher_test"
+
+echo "=== PPU sprite limits ==="
+"$CC" -std=c11 -Wall -Wextra -O1 \
+    -DSNESRECOMP_REVERSE_DEBUG=0 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/ppu/ppu_sprite_limit_test.c" \
+    "$ROOT/runner/src/snes/ppu.c" \
+    "$ROOT/runner/src/snes/ppu_legacy.c" \
+    -o "$OUT/ppu_sprite_limit_test"
+"$OUT/ppu_sprite_limit_test"
+
+echo "=== PPU widescreen world-mirror band ==="
+"$CC" -std=c11 -Wall -Wextra -O1     -DSNESRECOMP_REVERSE_DEBUG=0     -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes"     "$ROOT/tests/ppu/ppu_world_mirror_test.c"     "$ROOT/runner/src/snes/ppu.c"     "$ROOT/runner/src/snes/ppu_legacy.c"     -o "$OUT/ppu_world_mirror_test"
+"$OUT/ppu_world_mirror_test"
+
+echo "=== PPU widescreen elastic anchor band ==="
+"$CC" -std=c11 -Wall -Wextra -O1     -DSNESRECOMP_REVERSE_DEBUG=0     -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes"     "$ROOT/tests/ppu/ppu_elastic_band_test.c"     "$ROOT/runner/src/snes/ppu.c"     "$ROOT/runner/src/snes/ppu_legacy.c"     -o "$OUT/ppu_elastic_band_test"
+"$OUT/ppu_elastic_band_test"
+
+echo "=== DMA / HDMA ==="
+# sdd1.c is upstream's vendored S-DD1 decoder and is not -Werror clean here:
+# sdd1.c:773 reads `(a16 >= 0x00 && 0)`, an always-true comparison on a
+# uint16_t ANDed with 0, so the clause is dead. The product build does not
+# use -Werror, so this only bites the harness. Exempted rather than edited:
+# the file belongs to work still moving upstream, and quietly rewriting
+# somebody else's condition is how a real intent ("disabled for now") gets
+# lost. Worth reporting there.
+"$CC" -std=c11 -Wall -Wextra -Werror -Wno-error=type-limits -O1 \
+    -DSNESRECOMP_REVERSE_DEBUG=0 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/dma/hdma_test.c" \
+    "$ROOT/runner/src/snes/dma.c" \
+    "$ROOT/runner/src/snes/sdd1.c" \
+    -o "$OUT/hdma_test"
+"$OUT/hdma_test"
+
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -Wno-error=parentheses -Wno-error=unused-variable \
+    -Wno-error=unused-const-variable -Wno-error=type-limits \
+    -DSNESRECOMP_REVERSE_DEBUG=0 \
+    -ffunction-sections -fdata-sections \
+    -I "$ROOT/tests/dma" -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/dma/hdma_timing_test.c" \
+    "$ROOT/runner/src/snes/dma.c" \
+    "$ROOT/runner/src/snes/snes.c" \
+    "$ROOT/runner/src/snes/sdd1.c" \
+    $GC_SECTIONS_LINKER -o "$OUT/hdma_timing_test"
+"$OUT/hdma_timing_test"
+
+echo "=== fiber snapshot (rewindable execution position) ==="
+# Darwin exposes the POSIX context API but marks it deprecated.
+"$CC" $FIBER_PLATFORM_FLAGS -std=c11 -Wall -Wextra -Werror -O1 \
+    -D_POSIX_C_SOURCE=200809L \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/desktop" \
+    "$ROOT/tests/host/fiber_snapshot_test.c" \
+    "$ROOT/runner/src/desktop/fiber_compat.c" \
+    -o "$OUT/fiber_snapshot_test"
+"$OUT/fiber_snapshot_test"
+
+echo "=== interpreter and bridge ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -D_POSIX_C_SOURCE=200809L -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/interp816/tier2_capture_test.c" \
+    "$ROOT/runner/src/snes/tier2_capture.c" \
+    -o "$OUT/tier2_capture_test"
+(cd "$OUT" && ./tier2_capture_test disabled)
+(cd "$OUT" && ./tier2_capture_test)
+
+"$CC" -std=c11 -Wall -Wextra -Wno-unused-parameter -O1 \
+    -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/interp816/interp816_test.c" \
+    "$ROOT/runner/src/snes/interp816.c" \
+    -o "$OUT/interp816_test"
+"$OUT/interp816_test"
+
+"$CC" -std=c11 -Wall -Wextra -Wno-unused-parameter -O1 \
+    -D_POSIX_C_SOURCE=200809L -DSNESRECOMP_TIER2_TEST=1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/interp816/bridge_test.c" \
+    "$ROOT/runner/src/snes/interp816.c" \
+    "$ROOT/runner/src/snes/tier2_capture.c" \
+    "$ROOT/runner/src/snes/interp_bridge.c" \
+    "$ROOT/runner/src/snes/cx4.c" \
+    -lm -o "$OUT/bridge_test"
+"$OUT/bridge_test"
+
+echo "=== DSP-1 bus/core shell ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/dsp1/dsp1_header_test.c" \
+    "$ROOT/runner/src/snes/snes_other.c" \
+    -o "$OUT/dsp1_header_test"
+"$OUT/dsp1_header_test"
+
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/dsp1/dsp1_test.c" \
+    "$ROOT/runner/src/snes/dsp1.c" \
+    "$ROOT/runner/src/snes/dsp1_hle.c" \
+    -lm -o "$OUT/dsp1_test"
+"$OUT/dsp1_test"
+
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/dsp1/dsp1_hle_test.c" \
+    "$ROOT/runner/src/snes/dsp1_hle.c" \
+    -lm \
+    -o "$OUT/dsp1_hle_test"
+"$OUT/dsp1_hle_test"
+
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/dsp1/dsp1_hle_host_test.c" \
+    "$ROOT/runner/src/snes/dsp1.c" \
+    "$ROOT/runner/src/snes/dsp1_hle.c" \
+    -lm \
+    -o "$OUT/dsp1_hle_host_test"
+(cd "$OUT" && env -u SNESRECOMP_DSP1_ROM ./dsp1_hle_host_test)
+
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/dsp1/dsp1_firmware_test.c" \
+    "$ROOT/runner/src/snes/dsp1.c" \
+    "$ROOT/runner/src/snes/dsp1_hle.c" \
+    -lm \
+    -o "$OUT/dsp1_firmware_test"
+"$OUT/dsp1_firmware_test"
+
+echo "=== SA-1 CPU, mapping and peripherals ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/sa1/sa1_header_test.c" \
+    "$ROOT/runner/src/snes/snes_other.c" \
+    -o "$OUT/sa1_header_test"
+"$OUT/sa1_header_test"
+
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/sa1/sa1_test.c" \
+    "$ROOT/runner/src/snes/sa1.c" \
+    "$ROOT/runner/src/snes/interp816.c" \
+    -o "$OUT/sa1_test"
+"$OUT/sa1_test"
+
+echo "=== manual joypad serial protocol ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/joypad/manual_joypad_test.c" \
+    "$ROOT/runner/src/snes/joypad.c" \
+    -o "$OUT/manual_joypad_test"
+"$OUT/manual_joypad_test"
+
+echo "=== automatic joypad register byte order ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/joypad/auto_joypad_test.c" \
+    "$ROOT/runner/src/snes/joypad.c" \
+    -o "$OUT/auto_joypad_test"
+"$OUT/auto_joypad_test"
+
+echo "=== Super Multitap protocol ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/joypad/multitap_test.c" \
+    "$ROOT/runner/src/snes/joypad.c" \
+    -o "$OUT/multitap_test"
+"$OUT/multitap_test"
+
+echo "=== runtime dispatch ==="
+"$CC" -std=c11 -Wall -Wextra -ffunction-sections -fdata-sections \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/runtime_dispatch/known_lle_entry_test.c" \
+    "$ROOT/runner/src/cpu_state.c" \
+    "$ROOT/runner/src/snes/cart.c" \
+    "$ROOT/runner/src/snes/sdd1.c" \
+    "$ROOT/runner/src/snes/cx4.c" \
+    "$ROOT/runner/src/snes/dsp1.c" \
+    "$ROOT/runner/src/snes/dsp1_hle.c" \
+    "$ROOT/runner/src/snes/sa1.c" \
+    "$ROOT/runner/src/snes/interp816.c" \
+    $GC_SECTIONS_LINKER -lm -o "$OUT/known_lle_entry_test"
+"$OUT/known_lle_entry_test"
+
+echo "=== production diagnostic gates ==="
+"$CC" -std=c11 -Wall -Wextra -Werror \
+    -ffunction-sections -fdata-sections \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/runtime_dispatch/diagnostic_gates_test.c" \
+    "$ROOT/runner/src/common_cpu_infra.c" \
+    $GC_SECTIONS_LINKER -o "$OUT/diagnostic_gates_test"
+"$OUT/diagnostic_gates_test"
+
+echo "=== rollback state digest ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/netplay/rb_state_digest_test.c" \
+    "$ROOT/runner/src/netplay/snes_state_digest.c" \
+    "$ROOT/runner/src/snes/joypad.c" \
+    "$ROOT/runner/src/snes/apu.c" \
+    "$ROOT/runner/src/snes/spc.c" \
+    "$ROOT/runner/src/snes/dsp.c" \
+    "$ROOT/runner/src/crc32.c" \
+    -o "$OUT/rb_state_digest_test"
+"$OUT/rb_state_digest_test"
+
+echo "=== APU guest-time pacing ==="
+"$CC" -std=c11 -Wall -Wextra -Werror \
+    -Wno-error=unknown-pragmas -Wno-error=comment \
+    -ffunction-sections -fdata-sections \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/snes" \
+    "$ROOT/tests/runtime_dispatch/apu_port_guest_time_test.c" \
+    "$ROOT/runner/src/snes/apu.c" \
+    "$ROOT/runner/src/snes/spc.c" \
+    "$ROOT/runner/src/snes/dsp.c" \
+    $GC_SECTIONS_LINKER -o "$OUT/apu_port_guest_time_test"
+"$OUT/apu_port_guest_time_test"
+
+echo "=== benchmark helper ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" \
+    "$ROOT/tests/benchmark/benchmark_helper_test.c" \
+    "$ROOT/runner/src/benchmark.c" \
+    -o "$OUT/benchmark_helper_test_phaseoff"
+"$OUT/benchmark_helper_test_phaseoff"
+
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -DSNESRECOMP_BENCHMARK_PHASES=1 \
+    -I "$ROOT/runner/src" \
+    "$ROOT/tests/benchmark/benchmark_helper_test.c" \
+    "$ROOT/runner/src/benchmark.c" \
+    -o "$OUT/benchmark_helper_test_phaseon"
+"$OUT/benchmark_helper_test_phaseon"
+
+echo "=== audio trace history modes ==="
+for mode in 0 1 2 3; do
+    "$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+        -D_POSIX_C_SOURCE=200809L \
+        -DSNESRECOMP_AUDIO_TRACE_HISTORY="$mode" \
+        -I "$ROOT/runner/src" \
+        "$ROOT/tests/audio/audio_trace_history_test.c" \
+        "$ROOT/runner/src/audio_trace.c" \
+        -o "$OUT/audio_trace_history_test_$mode"
+    (cd "$OUT" && "./audio_trace_history_test_$mode")
+done
+
+echo "=== audio trace stats clock gate ==="
+for mode in 0 1 2 3; do
+    "$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+        -D_POSIX_C_SOURCE=200809L \
+        -DSNESRECOMP_AUDIO_TRACE_HISTORY="$mode" \
+        -DSNESRECOMP_AUDIO_TRACE_TEST_WALL_MS=1 \
+        -DSNESRECOMP_AUDIO_TRACE_TEST_FOPEN=1 \
+        -DSNESRECOMP_AUDIO_TRACE_TEST_GETENV=1 \
+        -I "$ROOT/runner/src" \
+        "$ROOT/tests/audio/audio_trace_clock_gate_test.c" \
+        "$ROOT/runner/src/audio_trace.c" \
+        -o "$OUT/audio_trace_clock_gate_test_$mode"
+    (cd "$OUT" && env -u SNESRECOMP_AUDIO_STATS \
+        "./audio_trace_clock_gate_test_$mode" off)
+    (cd "$OUT" && env -u SNESRECOMP_AUDIO_STATS \
+        "./audio_trace_clock_gate_test_$mode" snap)
+    (cd "$OUT" && env -u SNESRECOMP_AUDIO_STATS \
+        "./audio_trace_clock_gate_test_$mode" off-empty)
+    (cd "$OUT" && env -u SNESRECOMP_AUDIO_STATS \
+        "./audio_trace_clock_gate_test_$mode" snap-empty)
+    (cd "$OUT" && env -u SNESRECOMP_AUDIO_STATS \
+        "./audio_trace_clock_gate_test_$mode" off-zero)
+    (cd "$OUT" && env -u SNESRECOMP_AUDIO_STATS \
+        "./audio_trace_clock_gate_test_$mode" snap-zero)
+    (cd "$OUT" && env SNESRECOMP_AUDIO_STATS=1 \
+        "./audio_trace_clock_gate_test_$mode" stderr)
+    (cd "$OUT" && env SNESRECOMP_AUDIO_STATS="audio_trace_clock_gate_stats_$mode.log" \
+        "./audio_trace_clock_gate_test_$mode" path)
+    (cd "$OUT" && env SNESRECOMP_AUDIO_STATS="audio_trace_clock_gate_fail_$mode.log" \
+        SNESRECOMP_AUDIO_TRACE_TEST_FOPEN_FAIL=1 \
+        "./audio_trace_clock_gate_test_$mode" open-fail)
+done
+
+echo "=== lobby mod plan (match_caps.mods wire shape) ==="
+# Includes snes_lobby_client.c directly to exercise the real codec, so it needs
+# the same guard define and include roots the runner build uses.
+"$CC" -std=c11 -Wall -Wextra -O1 \
+    -D_POSIX_C_SOURCE=200809L -DSNES_HAS_LOBBY_CLIENT=1 \
+    -I "$ROOT/runner/src" -I "$ROOT/runner/src/lobby" \
+    -I "$ROOT/runner/src/lobby/ws" -I "$ROOT/lib/recomp-net/include" \
+    "$ROOT/tests/netplay/lobby_mod_plan_test.c" \
+    "$ROOT/lib/recomp-net/src/chat/rnet_chat_filter.c" \
+    "$ROOT/lib/recomp-net/src/chat/rnet_chat_report.c" \
+    -o "$OUT/lobby_mod_plan_test"
+"$OUT/lobby_mod_plan_test"
+
+echo "=== keybinds: the runner-layout keyboard word ==="
+# Needs SDL headers for the scancode enum only (no window, no device). Skipped
+# rather than failed where they are absent, like the OSD test below.
+KB_SDL_CFLAGS=""; KB_SDL_LIBS=""; KB_SDL_DEF=""
+if pkg-config --exists sdl3 2>/dev/null; then
+    KB_SDL_CFLAGS="$(pkg-config --cflags sdl3)"
+    KB_SDL_LIBS="$(pkg-config --libs sdl3)"
+    KB_SDL_DEF="-DSNESRECOMP_SDL3=1"
+elif pkg-config --exists sdl2 2>/dev/null; then
+    KB_SDL_CFLAGS="$(pkg-config --cflags sdl2)"
+    KB_SDL_LIBS="$(pkg-config --libs sdl2)"
+fi
+if [ -n "$KB_SDL_LIBS" ]; then
+    "$CC" -std=c11 -Wall -Wextra -O1 $KB_SDL_DEF $KB_SDL_CFLAGS \
+        -I "$ROOT/runner/src" \
+        "$ROOT/tests/joypad/keybinds_runner_layout_test.c" \
+        "$ROOT/runner/src/keybinds.c" \
+        $KB_SDL_LIBS -o "$OUT/keybinds_runner_layout_test"
+    ( cd "$OUT" && ./keybinds_runner_layout_test )
+else
+    echo "  (skipped: no SDL headers)"
+fi
+
+echo "=== mod runtime: presentation_only is not compared by netplay ==="
+# C++ because mod_runtime is C++, and it is compiled here rather than mocked so
+# the real manifest parser, the real effective-set text and the real adopt
+# sweep are what the cases run against. The fixture catalog is written into
+# $OUT by the test itself, so this stays ROM-free and leaves nothing in the
+# source tree.
+"${CXX:-g++}" -std=c++17 -Wall -Wextra -O1 \
+    -I "$ROOT/runner/src" \
+    -x c++ "$ROOT/tests/netplay/mod_presentation_only_test.c" \
+    "$ROOT/runner/src/mod_runtime.cpp" \
+    "$ROOT/runner/src/crc32.c" \
+    "$ROOT/runner/src/sha256.c" \
+    -o "$OUT/mod_presentation_only_test"
+rm -rf "$OUT/mod_presentation_only_fixture"
+"$OUT/mod_presentation_only_test" "$OUT/mod_presentation_only_fixture"
+
+echo "=== host OSD (FPS readout / turbo / toasts) ==="
+# Needs SDL for its clock only (no window; SDL_INIT_TIMER). Skipped rather than
+# failed where SDL headers are absent, so this stays a ROM-free harness that
+# also runs on a machine without the game's build deps.
+OSD_SDL_CFLAGS=""
+OSD_SDL_LIBS=""
+OSD_SDL_BACKEND=""
+if pkg-config --exists sdl3 2>/dev/null; then
+    OSD_SDL_CFLAGS="$(pkg-config --cflags sdl3)"
+    OSD_SDL_LIBS="$(pkg-config --libs sdl3)"
+    OSD_SDL_BACKEND="-DSNESRECOMP_SDL3=1"
+elif pkg-config --exists sdl2 2>/dev/null; then
+    OSD_SDL_CFLAGS="$(pkg-config --cflags sdl2)"
+    OSD_SDL_LIBS="$(pkg-config --libs sdl2)"
+    OSD_SDL_BACKEND=""
+fi
+if [ -n "$OSD_SDL_LIBS" ]; then
+    # shellcheck disable=SC2086
+    "$CC" -std=c11 -Wall -Wextra -O1 \
+        -I "$ROOT/runner/src" -I "$ROOT/runner/src/desktop" \
+        $OSD_SDL_CFLAGS $OSD_SDL_BACKEND \
+        "$ROOT/tests/osd/osd_test.c" \
+        "$ROOT/runner/src/snes_osd.c" \
+        $OSD_SDL_LIBS -o "$OUT/osd_test"
+    "$OUT/osd_test"
+else
+    echo "  (skipped: no SDL2/SDL3 pkg-config)"
+fi
+
+echo "=== account secret path (rebuild must not sign you out) ==="
+# _GNU_SOURCE: rnet_auth.c uses getaddrinfo, and the test uses mkdtemp.
+"$CC" -std=gnu11 -Wall -Wextra -O1 -D_GNU_SOURCE \
+    -I "$ROOT/lib/recomp-net/include" -I "$ROOT/lib/recomp-net/src" \
+    "$ROOT/tests/auth/secret_path_test.c" \
+    "$ROOT/lib/recomp-net/src/auth/rnet_auth.c" \
+    "$ROOT/lib/recomp-net/src/auth/rnet_sha256.c" \
+    -lpthread -o "$OUT/secret_path_test"
+"$OUT/secret_path_test"
+
+echo "=== rewind ring (ordering, clamping, what commit discards) ==="
+# The snapshot API is stubbed, so this tests the ring rather than re-testing
+# the save format the save-state menu already exercises.
+"$CC" -std=gnu11 -Wall -Wextra -O1 -D_GNU_SOURCE \
+    -I "$ROOT/runner/src" \
+    "$ROOT/tests/rewind/rewind_test.c" \
+    "$ROOT/runner/src/snes_rewind.c" \
+    "$ROOT/runner/src/snes_overlay_draw.c" \
+    -o "$OUT/rewind_test"
+"$OUT/rewind_test"
+
+echo "=== Super FX state and presentation isolation ==="
+"$CC" -std=c11 -Wall -Wextra -Werror -O1 \
+    -I "$ROOT/runner/src" \
+    "$ROOT/tests/superfx/enhancement_opt_in_test.c" \
+    "$ROOT/runner/src/snes/superfx.c" \
+    -o "$OUT/superfx_state_test"
+"$OUT/superfx_state_test"
