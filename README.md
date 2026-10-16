@@ -23,6 +23,65 @@ scaling, New Game+, RetroAchievements and more.
 | Nintendo 3DS / 2DS | `.cia`, `.3dsx` | Runs in Azahar; not yet tested on hardware; New 3DS recommended |
 | PlayStation Vita | `.vpk` | Runs in Vita3K; not yet tested on hardware |
 
+## Thanks
+
+This port stands on the work of many people. Thank you all.
+
+- **[snesrecomp](https://github.com/RetroPortingToolKit/snesrecomp)** — the
+  SNES static-recompilation framework this port is built on, by Matthew
+  Stanley and the R.A.I.D. community; and its launcher,
+  **[recomp-ui](https://github.com/RetroPortingToolKit/recomp-ui)**.
+- **[GaiaLabs](https://github.com/Azarem/GaiaLabs)** by Azarem — the Illusion
+  of Gaia ROM-hacking toolkit, disassembly and database: symbols, text format,
+  and the reference patches behind the run button, New Game+, music transitions
+  and more. This port would not exist without these tools.
+- **Aleks** ([ALEKS Ultimate NX](https://github.com/Alexgg1014/The-Legend-of-Zelda-A-Link-To-The-Past-Alek-s-Ultimate-NX-Edition))
+  — for the dual-screen companion (the Dual and Flip Grip layouts) and for
+  their help throughout. Its safe boot, crash reporter and RetroAchievements
+  storage were adapted here with permission.
+- **EstebanPdN** ([zelda-alttp-3ds](https://github.com/EstebanPdN/zelda-alttp-3ds))
+  — the port ALEKS Ultimate NX is built on.
+- **Illusion of Gaia Randomizer** — DontBaguMe and contributors
+  ([IoGR](https://github.com/DontBaguMe/IoGR), [iogr.app](https://www.iogr.app));
+  the **Apocalypse Gaia** patch by a member of that community, and its
+  playtesters.
+- **MSU-1 pack authors**, in particular **Conn** ([Zeldix forum](https://www.zeldix.net)),
+  whose track layout this port follows.
+- **Emulation research and code** in snesrecomp:
+  [snesrev zelda3](https://github.com/snesrev/zelda3) and
+  [smw](https://github.com/snesrev/smw) (the SNES hardware core),
+  [LakeSnes](https://github.com/angelo-wf/LakeSnes),
+  [snes9x](https://github.com/snes9xgit/snes9x),
+  [bsnes](https://github.com/bsnes-emu/bsnes),
+  [ares](https://github.com/ares-emulator/ares) (Cx4),
+  [SMWDisX](https://github.com/IsoFrieze/SMWDisX) (IsoFrieze),
+  [recompiler-rs](https://github.com/perplexes/snesrecomp) (perplexes),
+  [ar-recomp](https://github.com/DerrickGold/ar-recomp) (DerrickGold) — see
+  [THIRD_PARTY_ATTRIBUTION.md](snesrecomp/THIRD_PARTY_ATTRIBUTION.md).
+- **[RetroAchievements](https://retroachievements.org)** and
+  **[rcheevos](https://github.com/RetroAchievements/rcheevos)**.
+- **[SDL](https://github.com/libsdl-org/SDL)**,
+  **[Dear ImGui](https://github.com/ocornut/imgui)** (Omar Cornut),
+  **[stb](https://github.com/nothings/stb)** (Sean Barrett), the
+  [Lato](https://www.latofonts.com),
+  [Noto Sans Symbols 2](https://github.com/notofonts/symbols) and
+  [OpenMoji](https://openmoji.org) fonts.
+- **Consoles:** [devkitPro](https://github.com/devkitPro) (devkitA64, libnx,
+  devkitARM, libctru), Mesa for Switch
+  ([danfromtico](https://github.com/danfromtico/mesa-switch),
+  [NaGaa95](https://github.com/NaGaa95/mesa-switch)),
+  [VitaSDK](https://vitasdk.org),
+  [Project_CTR](https://github.com/3DSGuy/Project_CTR) (makerom) and
+  [bannertool](https://github.com/diasurgical/bannertool).
+- **[RetroArch / libretro](https://github.com/libretro/RetroArch)** — the GLSL
+  shader format and `libretro.h`.
+- The **zelda3** ports for [3DS](https://github.com/ProbablyRohan/Z3R-3ds)
+  (ProbablyRohan) and [Vita](https://github.com/Rinnegatamante/zelda3)
+  (Rinnegatamante), whose build choices informed the handheld versions.
+- **Quintet / Enix**, for the original *Illusion of Gaia* (1993). All game
+  content belongs to its rights holders.
+- Everyone who tested builds and sent logs, screenshots and videos.
+
 ## What you need
 
 - **Illusion of Gaia (USA)** ROM, unmodified, 2 MB (a 512-byte copier header
@@ -315,50 +374,6 @@ publishes them when a `v*` tag is pushed.
 Open an issue and attach the `logs/` folder from beside the game
 (`sdmc:/switch/babel-recomp/logs/` on Switch, `babel-recomp.log` too). Say
 what you were doing and which mods were on.
-
-## Credits and thanks
-
-This port stands on a lot of other people's work. Thank you all.
-
-- **Quintet / Enix** — the original *Illusion of Gaia* (1993). All game
-  content belongs to its rights holders.
-- **snesrecomp** — the SNES static-recompilation framework, by Matthew
-  Stanley and the R.A.I.D. community
-  ([official repository](https://github.com/RetroPortingToolKit/snesrecomp)).
-  This port is built on it. It includes code and research from:
-  - **snesrev** (zelda3 / smw reverse-engineered ports, MIT) — the SNES
-    hardware core;
-  - **LakeSnes**, **snes9x**, **bsnes**, **ares** (Cx4), **IsoFrieze**
-    (SMWDisX), **perplexes** (recompiler-rs), **DerrickGold** (ar-recomp) and
-    others listed in
-    [snesrecomp/THIRD_PARTY_ATTRIBUTION.md](snesrecomp/THIRD_PARTY_ATTRIBUTION.md).
-- **recomp-ui** — the launcher, by Matthew Stanley (MIT), with **Dear ImGui**
-  (Omar Cornut), **stb** (Sean Barrett), Lato, Noto Sans Symbols 2 and OpenMoji
-  fonts (see their `NOTICE.md` files).
-- **GaiaLabs** by Azarem ([GaiaLabs](https://github.com/Azarem/GaiaLabs)) —
-  the Illusion of Gaia ROM-hacking toolkit, disassembly and database: the
-  symbols, the text format, and the reference patches behind the run button,
-  New Game+, music transitions and more. This port would not exist without
-  these tools.
-- **Illusion of Gaia Randomizer (IoGR)** — DontBaguMe and contributors
-  ([iogr.app](https://www.iogr.app)); the **Apocalypse Gaia** patch by a
-  member of that community, and its playtesters.
-- **MSU-1 pack authors** — in particular **Conn** (Zeldix forum), whose pack
-  layout this port follows.
-- **Aleks** (Alexgg1014), author of
-  [ALEKS Ultimate NX](https://github.com/Alexgg1014/The-Legend-of-Zelda-A-Link-To-The-Past-Alek-s-Ultimate-NX-Edition) — for the
-  dual-screen companion (the Dual and Flip Grip layouts) and for their help
-  throughout. Its safe boot, crash reporter and RetroAchievements storage were
-  adapted here with permission. ALEKS Ultimate NX is built on
-  **EstebanPdN**'s [zelda-alttp-3ds](https://github.com/EstebanPdN/zelda-alttp-3ds).
-- **RetroAchievements** and **rcheevos**.
-- **SDL** (libsdl.org), **devkitPro** (devkitA64, libnx, devkitARM, libctru),
-  **Mesa** for Switch (danfromtico, NaGaa95), **VitaSDK**, **Project_CTR**
-  (makerom) and **bannertool**.
-- The **zelda3** ports for 3DS (ProbablyRohan) and Vita (Rinnegatamante), whose
-  build choices informed the handheld versions.
-- **RetroArch / libretro** — the GLSL shader format and `libretro.h`.
-- Everyone who tested builds and sent logs, screenshots and videos.
 
 ## AI-assisted project
 
